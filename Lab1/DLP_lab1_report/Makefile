@@ -1,5 +1,5 @@
 CMD = xelatex
-DOC = test
+DOC = report
 all: 
 	$(CMD) $(DOC) && bibtex $(DOC) && $(CMD) $(DOC) && $(CMD) $(DOC) 
 
