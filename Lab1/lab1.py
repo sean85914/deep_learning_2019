@@ -25,6 +25,7 @@ parser.add_argument("--model_type", help="type of model, 0 for Separable and 1 f
 parser.add_argument("--epoch", help="number of iteration, default is 10000", default=10000)
 parser.add_argument("--lr", help="learning_rate, default is 0.01", default=1e-2)
 parser.add_argument("--loss_type", help="type of loss, 0 for cross entropy and 1 for MSE, default is 0", default=0)
+parser.add_argument("--output", "-o", help="output file name as string, default is None, i.e., no format will be saved", default="None")
 
 args = parser.parse_args()
 
@@ -250,3 +251,9 @@ if args.model_type == 0:
 else:
     show_result(x_train_1, y_train_1, forward(x_train_1, W))
 plt.show()
+
+if args.output is not None:
+	f = open(args.output, 'w+')
+	for i in range(len(W)):
+		f.write(str(W[i]))
+	f.close()
