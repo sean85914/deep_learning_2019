@@ -252,7 +252,7 @@ else:
     show_result(x_train_1, y_train_1, forward(x_train_1, W))
 plt.show()
 
-if args.output is not None:
+if args.output is not "None":
 	f = open(args.output, 'w+')
 	for i in range(len(W)):
 		f.write(str(W[i]))
