@@ -9,3 +9,4 @@ data/
 *.zip
 *.jpeg
 *.jpg
+*.pth
