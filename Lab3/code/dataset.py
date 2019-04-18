@@ -1,6 +1,16 @@
+'''
+  PyTorch dataset implementation
+  Editor: Sean Lu
+  Last Edited: 4/17
+'''
 import pandas as pd
 from torch.utils import data
 import numpy as np
+import os
+import sys
+if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
+	sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
+import cv2
 
 
 def getData(mode):
@@ -15,7 +25,7 @@ def getData(mode):
 
 
 class RetinopathyLoader(data.Dataset):
-    def __init__(self, root, mode):
+    def __init__(self, root, mode, transform=None):
         """
         Args:
             root (string): Root path of the dataset.
@@ -24,9 +34,11 @@ class RetinopathyLoader(data.Dataset):
             self.img_name (string list): String list that store all image names.
             self.label (int or float list): Numerical list that store all ground truth label values.
         """
-        self.root = root
+        path = os.path.join(os.getcwd(), root)
+        self.root = path
         self.img_name, self.label = getData(mode)
         self.mode = mode
+        self.transform = transform
         print("> Found %d images..." % (len(self.img_name)))
 
     def __len__(self):
@@ -53,5 +65,11 @@ class RetinopathyLoader(data.Dataset):
                          
             step4. Return processed image and label
         """
-
+        img_path = self.root + "/" + self.img_name[index] + ".jpeg"
+        img = cv2.imread(img_path)
+        if self.transform:
+            img = self.transform(img)
+            
+        label = self.label[index]
+        
         return img, label
