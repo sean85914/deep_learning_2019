@@ -10,6 +10,8 @@ import torch
 import torch.nn as nn
 from torch import optim
 import torch.nn.functional as F
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 plt.switch_backend('agg')
 import matplotlib.ticker as ticker
@@ -52,6 +54,38 @@ teacher_forcing_ratio = 0.5
 empty_input_ratio = 0.1
 KLD_weight = 0.0
 LR = 0.05
+MAX_LENGTH = vocab_size
+
+#Dataloader
+pairs = {}
+count = 0
+for line in open("data/train.txt"):
+    line = line.split(' ')
+    for i in range(4):
+        if i is not 3:
+            pairs[count] = line[i]
+        else:
+            pairs[count] = line[i].split('\n')[0]
+        count += 1
+
+alphabet2index={}
+index2alphabet={}
+for i in range(0, 26):
+    alphabet2index[chr(97+i)] = i+2
+    index2alphabet[i+2] = chr(97+i)
+    
+#tensorFromWord
+def tensorFromWord(word):
+    l = []
+    for c in word:
+        l.append(alphabet2index[c])
+    l.append(1) # Put EOS at the end
+    return torch.tensor(l, dtype=torch.long, device=device).view(-1)
+
+#tensorsFromPair
+def tensorsFromPair(pair):
+    tensor = tensorFromWord(pair)
+    return (tensor, tensor)
 
 #The target word
 reference = 'accessed'
@@ -73,9 +107,13 @@ class EncoderRNN(nn.Module):
         self.gru = nn.GRU(hidden_size, hidden_size)
 
     def forward(self, input, hidden):
+        print("input shape: {}".format(input.shape))
         embedded = self.embedding(input).view(1, 1, -1)
         output = embedded
+        print("output shape: {}".format(output.shape))
         output, hidden = self.gru(output, hidden)
+        print("output shape: {}".format(output.shape))
+        print("hidden shape: {}".format(hidden.shape))
         return output, hidden
 
     def initHidden(self):
@@ -102,7 +140,7 @@ class DecoderRNN(nn.Module):
     def initHidden(self):
         return torch.zeros(1, 1, self.hidden_size, device=device)
 
-
+#Train
 def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, decoder_optimizer, criterion, max_length=MAX_LENGTH):
     encoder_hidden = encoder.initHidden()
 
@@ -118,6 +156,8 @@ def train(input_tensor, target_tensor, encoder, decoder, encoder_optimizer, deco
 
     #----------sequence to sequence part for encoder----------#
     encoder_output, encoder_hidden = encoder(input_tensor, encoder_hidden)
+    #print("encoder_output shape: {}".format(encoder_output.shape))
+    #print("encoder_hidden shape: {}".format(encoder_hidden.shape))
 
 
     decoder_input = torch.tensor([[SOS_token]], device=device)
@@ -170,7 +210,7 @@ def timeSince(since, percent):
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
 
-
+#TrainIters
 def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, learning_rate=0.01):
     start = time.time()
     plot_losses = []

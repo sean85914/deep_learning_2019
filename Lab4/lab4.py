@@ -67,8 +67,8 @@ accuracy = 0
 #############################################################################################
 for i in range(1, ITER+1):
     # Random take a, b
-    a_dec = np.random.randint(largest/2)
-    b_dec = np.random.randint(largest/2)
+    a_dec = np.random.randint(largest/2) # [0, 127]
+    b_dec = np.random.randint(largest/2) # [0, 127]
     c_dec = a_dec + b_dec # c = a + b
     # In binary
     a_bin = binary[a_dec]
